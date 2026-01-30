@@ -3,8 +3,7 @@ import '../theme/app_colors.dart';
 import '../widgets/weather_card.dart';
 import '../widgets/add_city_modal.dart';
 import '../screens/cities_screen.dart';
-import '../screens/dummy_search_screen.dart';
-import '../screens/complaint_screen.dart'; // Добавили импорт
+import '../screens/weather_search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -42,8 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
 
-          const DummySearchScreen(),
-          const ComplaintScreen(), // 👈 Новая вкладка
+          const WeatherSearchScreen(), // 👈 Заменили старые вкладки на поиск погоды
         ],
       ),
 
@@ -64,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppColors.background,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white54,
-        type: BottomNavigationBarType.fixed, // Чтобы отображалось больше 3 элементов
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
         items: const [
@@ -78,11 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
-            label: 'DummyJSON',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report_problem),
-            label: 'Report',
+            label: 'Weather Search',
           ),
         ],
       ),
