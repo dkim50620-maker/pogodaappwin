@@ -4,6 +4,8 @@ import '../widgets/weather_card.dart';
 import '../widgets/add_city_modal.dart';
 import '../screens/cities_screen.dart';
 import '../screens/weather_search_screen.dart';
+import '../services/weather_service.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,22 +18,55 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   final List<Map<String, String>> _cities = [
-    {'name': 'Montreal', 'temp': '10°'},
-    {'name': 'Toronto', 'temp': '12°'},
-    {'name': 'Tokyo', 'temp': '15°'},
+    {'name': 'Montreal', 'temp': '...'},
+    {'name': 'Toronto', 'temp': '...'},
+    {'name': 'Tokyo', 'temp': '...'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchInitialWeather();
+  }
+
+  Future<void> _fetchInitialWeather() async {
+    for (int i = 0; i < _cities.length; i++) {
+      final data = await WeatherService.fetchWeather(_cities[i]['name']!);
+      if (data != null && mounted) {
+        setState(() {
+          _cities[i]['temp'] = "${data['current']['temp_c'].round()}°";
+        });
+      }
+    }
+  }
+
+  void _handleLogout() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(_currentIndex == 0 ? 'Home' : _currentIndex == 1 ? 'Cities' : 'Search'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: _handleLogout,
+          ),
+        ],
+      ),
 
-      // ====== ОСНОВНОЙ КОНТЕНТ ======
       body: IndexedStack(
         index: _currentIndex,
         children: [
           _buildHomeTab(),
-
           CitiesScreen(
             cities: _cities,
             onSelect: (index) {
@@ -40,24 +75,20 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             },
           ),
-
-          const WeatherSearchScreen(), // 👈 Заменили старые вкладки на поиск погоды
+          const WeatherSearchScreen(),
         ],
       ),
 
-      // ====== FAB ТОЛЬКО НА HOME ======
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton(
-        onPressed: _showAddCityModal,
-        backgroundColor: AppColors.fab,
-        child: const Icon(Icons.add),
-      )
+              onPressed: _showAddCityModal,
+              backgroundColor: AppColors.fab,
+              child: const Icon(Icons.add),
+            )
           : null,
 
-      floatingActionButtonLocation:
-      FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      // ====== НИЖНЯЯ ПАНЕЛЬ ======
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: AppColors.background,
         selectedItemColor: Colors.white,
@@ -82,10 +113,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ====== HOME TAB ======
   Widget _buildHomeTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 80, bottom: 50),
+      padding: const EdgeInsets.only(top: 20, bottom: 50),
       child: Column(
         children: [
           Image.asset(
@@ -100,10 +130,10 @@ class _HomeScreenState extends State<HomeScreen> {
             children: _cities
                 .map(
                   (city) => WeatherCard(
-                time: city['name']!,
-                temp: city['temp']!,
-              ),
-            )
+                    time: city['name']!,
+                    temp: city['temp']!,
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -111,7 +141,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ====== ADD CITY MODAL ======
   void _showAddCityModal() {
     showModalBottomSheet(
       context: context,
@@ -125,8 +154,21 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             _cities.add({'name': name, 'temp': temp});
           });
+          _fetchWeatherForNewCity(name);
         },
       ),
     );
+  }
+
+  Future<void> _fetchWeatherForNewCity(String name) async {
+    final data = await WeatherService.fetchWeather(name);
+    if (data != null && mounted) {
+      setState(() {
+        final index = _cities.indexWhere((c) => c['name'] == name);
+        if (index != -1) {
+          _cities[index]['temp'] = "${data['current']['temp_c'].round()}°";
+        }
+      });
+    }
   }
 }
