@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import '../theme/app_colors.dart';
 import 'registration_screen.dart';
 import 'home_screen.dart';
@@ -17,12 +18,19 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
 
   void _handleLogin() async {
-    final success = await _authService.login(
-      _loginController.text,
-      _passwordController.text,
-    );
+    final login = _loginController.text;
+    final password = _passwordController.text;
+
+    final success = await _authService.login(login, password);
 
     if (success) {
+      // Показываем уведомление
+      NotificationService.showNotification(
+        id: 0,
+        title: 'Успешный вход',
+        body: 'Добро пожаловать, $login!',
+      );
+
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -49,7 +57,8 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const Text(
                 'Вход',
-                style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 40),
               TextField(
@@ -58,7 +67,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Логин',
                   labelStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white54)),
+                  enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white54)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -69,7 +79,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Пароль',
                   labelStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white54)),
+                  enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white54)),
                 ),
               ),
               const SizedBox(height: 40),
@@ -87,7 +98,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     MaterialPageRoute(builder: (_) => const RegistrationScreen()),
                   );
                 },
-                child: const Text('Нет аккаунта? Зарегистрироваться', style: TextStyle(color: Colors.white70)),
+                child: const Text('Нет аккаунта? Зарегистрироваться',
+                    style: TextStyle(color: Colors.white70)),
               ),
             ],
           ),

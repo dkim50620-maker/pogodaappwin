@@ -5,6 +5,7 @@ import '../widgets/add_city_modal.dart';
 import '../screens/cities_screen.dart';
 import '../screens/weather_search_screen.dart';
 import '../services/weather_service.dart';
+import '../services/notification_service.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -155,6 +156,13 @@ class _HomeScreenState extends State<HomeScreen> {
             _cities.add({'name': name, 'temp': temp});
           });
           _fetchWeatherForNewCity(name);
+
+          // УВЕДОМЛЕНИЕ: Город добавлен
+          NotificationService.showNotification(
+            id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+            title: 'Город добавлен!',
+            body: 'Вы добавили "$name" в список.',
+          );
         },
       ),
     );
